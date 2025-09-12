@@ -9,9 +9,8 @@ function AnimeApp() {
       <BrowserRouter>
         <Navbar/>
       <Routes>
-
               <Route path="/"  element={<Home/>} ></Route>
-              <Route path='/Create Blog' element={<CreateBlog/>} ></Route>
+              <Route path='/createBlog' element={<CreateBlog/>} ></Route>
         </Routes>
       </BrowserRouter>
     

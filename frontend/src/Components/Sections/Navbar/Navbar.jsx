@@ -1,53 +1,4 @@
-// import { useState } from 'react'
-// import { BiBookmark, BiSearch } from 'react-icons/bi'
-// import { CgProfile } from 'react-icons/cg'
-// import { GiProfit } from 'react-icons/gi'
-// import { PiRowsFill } from 'react-icons/pi'
-// // import logo from '/assets/animefox.png'
-// function Navbar() {
-//   const [activeNav, setActiveNav] = useState("home")
-//   const navLinks = ['Home', 'Articles','Explore',"Trending",]
-//   return (
-//       <nav className='flex justify-between items-center px-15 py-9 bg-[#111110] shadow-2xl '>
-//         <div className="leftSideNav">
 
-//       <div className="logo gap-3 flex text-white items-center text-4xl">
-//         {/* <img src={logo} alt="" width="50px" /> */}
-//         News <span className='text-[#f17a31]'>24</span> 
-//       </div>
-      
-//         </div>
-//       <div className="navRightSide flex items-center justify-end gap-8">
-//         <div className="navLinks text-white text-lg transition-all duration-300">
-//         <ul className='flex gap-8 items-center'>
-//         {navLinks.map((link,idx)=>(
-//           <li key={idx} ><a href="#"  
-//           onClick={()=>setActiveNav(link)}
-//           className={`${activeNav === link ? "text-[#f17a31]":""} capitalize hover:border-b-2 hover:border-[#f17a31]  px-1.5 pb-1.5 text-shadow-2xs hover:text-[#f17a31]`} >{link}</a></li>
-//         ))}
-//         </ul>
-//       </div>
-//         <div className="navSearch relative text-black cursor-pointer">
-//           <label htmlFor="search">
-//             <input type="text" id='search' className='bg-gray-400 rounded-full px-2 py-[4px] text-black text-xl  outline-none' />
-//             <BiSearch size={20} className=' top-1/4 absolute  right-1 cursor-pointer ' />
-//             </label>
-//         </div>
-//         {/* <div className="navRightside flex gap-6"> */}
-//         <div className="bookmark text-white cursor-pointer group">
-//           <BiBookmark size={22}/>
-//         </div>
-//         <div className="profile text-white flex gap-1 items-center cursor-pointer">
-//           <CgProfile size={24} /> 
-//           <span className='text-xl' >Santhosh kumar</span>
-//         </div>
-//         {/* </div> */}
-//         </div>
-//       </nav>  
-//   )
-// }
-
-// export default Navbar
 import { useState, useEffect } from 'react'
 import { BiBookmark, BiSearch, BiMenu, BiX } from 'react-icons/bi'
 import { CgProfile } from 'react-icons/cg'
@@ -60,7 +11,7 @@ function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0)
   
-  const navLinks = ['Home', 'Articles', 'Explore', 'Trending',"Create Blog"]
+  const navLinks = ['home', 'articles', 'explore', 'trending',"createBlog"]
 
   // Track window width
   useEffect(() => {
