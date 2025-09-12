@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  AUTHOR
+  READER
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      UserRole  @default(READER)
+  avatar    String?   // profile picture
+  bio       String?
+  countryId String?
+  country   Country?  @relation(fields: [countryId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?  @updatedAt
+
+  blogs     Blog[]     // blogs written by this user
+  comments  Comment[]
+}
+
+model Country {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique // e.g., "US", "IN", "UK"
+  flag      String? // Optional flag image URL
+  createdAt DateTime? @default(now())
+
+  users User[]
+  blogs Blog[]
+}
+
+model Category {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  img String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  blog Blog[]
+}
+
+model Blog {
+  id          String      @id @default(uuid())
+  title       String
+  content     String
+  coverImage  String
+  images      String[]
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id])
+  countryId   String
+  country     Country     @relation(fields: [countryId], references: [id])
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime?    @updatedAt
+
+  // Many-to-many with Tags
+  tags        Tag[]
+
+  // One-to-many with Comments
+  comments    Comment[]
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  // Many-to-many with Blogs
+  blogs     Blog[]
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  blogId    String
+  blog      Blog      @relation(fields: [blogId], references: [id])
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?  @updatedAt
+}
