@@ -1,37 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, ShoppingBasket, ListTree, Ruler, LogOut, User } from 'lucide-react';
-import Categories from './Categories';
-import Countries from './Countries.jsx';
-import Blogs from './Blogs.jsx';
-
-// Mock data
-const mockCategories = [
-  { id: '1', name: 'Fruits', description: 'Fresh fruits', img: '/fruits.jpg' },
-  { id: '2', name: 'Vegetables', description: 'Fresh vegetables', img: '/vegetables.jpg' },
-];
-
-const mockCountries = [
-  { id: '1', name: 'India', code: '+91', imgUrl: 'httpasdf' },
-  { id: '2', name: 'India', code: '+85', imgUrl: 'httpalksdjf' },
-  { id: '3', name: 'India', code: '+51', imgUrl: 'httaserp' },
-];
-
-const mockBlogs = [];
+import { useState, useEffect } from "react";
+import { Menu, X, ShoppingBasket, ListTree, Ruler, LogOut, User } from "lucide-react";
+import Categories from "./Categories";
+import Countries from "./Countries";
+import Blogs from "./Blogs";
+import axiosInstance from "../../helpers/AxiosInstance.jsx";
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('categories');
-  const [categories, setCategories] = useState(mockCategories);
-  const [countries, setCountries] = useState(mockCountries);
-  const [blogs, setBlogs] = useState(mockBlogs);
+  const [activeTab, setActiveTab] = useState("categories");
+  const [categories, setCategories] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [blogs, setBlogs] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
       setSidebarOpen(window.innerWidth >= 768);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Fetch all data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [catRes, countryRes, blogRes] = await Promise.all([
+          axiosInstance.get('/categories'),
+          axiosInstance.get('/countries'),
+          axiosInstance.get('/blogs'),
+        ]);
+        setCategories(Array.isArray(catRes.data.data) ? catRes.data.data : []);
+        setCountries(Array.isArray(countryRes.data.data) ? countryRes.data.data : []);
+        setBlogs(Array.isArray(blogRes.data.data) ? blogRes.data.data : []);
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+      }
+    };
+    fetchData();
   }, []);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -39,40 +45,48 @@ const AdminPanel = () => {
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Sidebar */}
-      <div 
-        className={`fixed md:relative z-30 w-64 bg-gray-900 text-white transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ height: '100vh' }}
+      <div
+        className={`fixed md:relative z-30 w-64 bg-gray-900 text-white transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        style={{ height: "100vh" }}
       >
         <div className="p-4 flex items-center justify-between border-b border-gray-700">
-          <h1 className="text-xl font-bold">NutriGuide Admin</h1>
+          <h1 className="text-xl font-bold">News_24 Admin Panel</h1>
           <button onClick={toggleSidebar} className="md:hidden text-white">
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="p-4">
           <div className="flex items-center p-2 mb-4 bg-gray-800 rounded-lg">
             <User size={20} className="mr-2" />
             <span>Admin User</span>
           </div>
           <nav>
-            <button 
-              onClick={() => setActiveTab('categories')}
-              className={`w-full flex items-center p-2 mb-2 rounded-lg ${activeTab === 'categories' ? 'bg-[#29f700] text-black' : 'hover:bg-gray-800'}`}
+            <button
+              onClick={() => setActiveTab("categories")}
+              className={`w-full flex items-center p-2 mb-2 rounded-lg ${
+                activeTab === "categories" ? "bg-[#29f700] text-black" : "hover:bg-gray-800"
+              }`}
             >
               <ListTree size={20} className="mr-2" />
               Categories
             </button>
-            <button 
-              onClick={() => setActiveTab('countries')}
-              className={`w-full flex items-center p-2 mb-2 rounded-lg ${activeTab === 'countries' ? 'bg-[#29f700] text-black' : 'hover:bg-gray-800'}`}
+            <button
+              onClick={() => setActiveTab("countries")}
+              className={`w-full flex items-center p-2 mb-2 rounded-lg ${
+                activeTab === "countries" ? "bg-[#29f700] text-black" : "hover:bg-gray-800"
+              }`}
             >
               <Ruler size={20} className="mr-2" />
               Countries
             </button>
-            <button 
-              onClick={() => setActiveTab('blogs')}
-              className={`w-full flex items-center p-2 mb-2 rounded-lg ${activeTab === 'blogs' ? 'bg-[#29f700] text-black' : 'hover:bg-gray-800'}`}
+            <button
+              onClick={() => setActiveTab("blogs")}
+              className={`w-full flex items-center p-2 mb-2 rounded-lg ${
+                activeTab === "blogs" ? "bg-[#29f700] text-black" : "hover:bg-gray-800"
+              }`}
             >
               <ShoppingBasket size={20} className="mr-2" />
               Blogs
@@ -97,9 +111,9 @@ const AdminPanel = () => {
               <Menu size={24} />
             </button>
             <h2 className="text-xl font-semibold">
-              {activeTab === 'categories' && 'Category Management'}
-              {activeTab === 'countries' && 'Country Management'}
-              {activeTab === 'blogs' && 'Blog Management'}
+              {activeTab === "categories" && "Category Management"}
+              {activeTab === "countries" && "Country Management"}
+              {activeTab === "blogs" && "Blog Management"}
             </h2>
             <div></div>
           </div>
@@ -108,13 +122,9 @@ const AdminPanel = () => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 bg-gray-100">
           <div className="max-w-6xl mx-auto">
-            {activeTab === 'categories' && (
-              <Categories categories={categories} setCategories={setCategories} />
-            )}
-            {activeTab === 'countries' && (
-              <Countries countries={countries} setCountries={setCountries} />
-            )}
-            {activeTab === 'blogs' && (
+            {activeTab === "categories" && <Categories categories={categories} setCategories={setCategories} />}
+            {activeTab === "countries" && <Countries countries={countries} setCountries={setCountries} />}
+            {activeTab === "blogs" && (
               <Blogs blogs={blogs} setBlogs={setBlogs} categories={categories} countries={countries} />
             )}
           </div>
