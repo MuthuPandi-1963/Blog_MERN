@@ -32,6 +32,9 @@ model User {
   country   Country?  @relation(fields: [countryId], references: [id])
   createdAt DateTime  @default(now())
   updatedAt DateTime?  @updatedAt
+  verificationToken String?
+  verificationTokenExpiresAt DateTime?
+  isVerified Boolean @default(false)
 
   blogs     Blog[]     // blogs written by this user
   comments  Comment[]
