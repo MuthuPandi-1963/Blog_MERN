@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { Save, Edit, Trash2 } from 'lucide-react';
 import ImageUpload from '../../Components/Sections/cloudinary/ImageUpload.jsx';
 import axiosInstance from '../../helpers/AxiosInstance.jsx';
+import { useOutletContext } from 'react-router-dom';
 
-const Countries = ({ countries, setCountries }) => {
+const Countries = () => {
+  const {countries,setCountries} = useOutletContext()
   const [editingCountry, setEditingCountry] = useState(null);
   const [newCountry, setNewCountry] = useState({});
 
@@ -142,8 +144,8 @@ const Countries = ({ countries, setCountries }) => {
                 <td className="px-6 py-4 whitespace-nowrap">{country.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{country.code}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {country.imgUrl ? (
-                    <img src={country.imgUrl} alt="flag" style={{ width: '40px', height: '24px', objectFit: 'cover' }} />
+                  {country.flag ? (
+                    <img src={country.flag} alt="flag" style={{ width: '40px', height: '24px', objectFit: 'cover' }} />
                   ) : (
                     'No flag'
                   )}

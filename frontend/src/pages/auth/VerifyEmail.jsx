@@ -4,9 +4,11 @@ import { Atom } from 'react-loading-indicators';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../helpers/AxiosInstance';
 import { toast } from 'react-toastify';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
+import { userContext } from '../../store/Context';
 
 function VerifyEmail() {
+  const {setUsers} = useContext(userContext)
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ function VerifyEmail() {
 
     useEffect(() => {
     if (data) {
+      setUsers(data?.data);
       if (data.success) {
         toast.success(data.message || 'Email verified successfully!');
         navigate('/', { replace: true }); // ✅ replace removes token URL

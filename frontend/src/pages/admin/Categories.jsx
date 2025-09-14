@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { Save, Edit, Trash2 } from "lucide-react";
 import ImageUpload from "../../Components/Sections/cloudinary/ImageUpload.jsx";
 import axiosInstance from "../../helpers/AxiosInstance.jsx";
+import { useOutletContext } from "react-router-dom";
 
-const Categories = ({ categories, setCategories }) => {
+const Categories = () => {
+  const {categories,setCategories} = useOutletContext();
   const safeCategories = Array.isArray(categories) ? categories : [];
   const [editingItem, setEditingItem] = useState(null);
   const [newItem, setNewItem] = useState({});

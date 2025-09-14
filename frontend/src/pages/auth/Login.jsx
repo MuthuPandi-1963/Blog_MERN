@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../helpers/AxiosInstance';
+import { userContext } from '../../store/Context';
 
-const LoginPage = () => {
+const Login = () => {
+  const {setUser} = useContext(userContext)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -36,48 +39,46 @@ const LoginPage = () => {
   };
 
   // Mock login API call
-  const loginUser = async (userData) => {
-    // This would be your actual API call in a real application
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Mock response - in a real app, this would come from your backend
-        if (userData.email === 'user@example.com' && userData.password === 'password') {
-          resolve({
-            success: true,
-            user: {
-              id: '12345',
-              name: 'John Doe',
-              email: userData.email,
-              role: 'READER',
-              avatar: null,
-              bio: 'A passionate reader',
-              countryId: '1'
-            },
-            token: 'mock-jwt-token-123456'
-          });
-        } else {
-          reject({
-            success: false,
-            message: 'Invalid email or password'
-          });
-        }
-      }, 1500);
-    });
+  const loginUser = async () => {
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+      };
+      const response = await axiosInstance.post('/auth/login', payload);
+      console.log("res",response);
+      
+      if (response.data?.success) {
+        toast.success(response?.data?.message || 'Registration successful! Redirecting...');
+      } else {
+        toast.error(
+          response.data?.message ||
+          'Registration failed. Please try again.'
+        );
+      }
+      setFormData({
+        email: '',
+        password: '',
+      })
+      return response?.data
+    } catch (err) {
+      console.log("err",err);
+      
+      toast.error(
+        err.response?.data?.message ||
+        'Registration failed. Please try again.'
+      );
+    }
   };
 
   // TanStack Query mutation for login
   const loginMutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
+      setUser(data?.data)
       if (data.success) {
-        // Store user data (in a real app, you might use context or redux)
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('token', data.token);
-        
         toast.success('Login successful! Redirecting...');
-        setTimeout(() => {
-          navigate('/home');
-        }, 2000);
+        navigate('/');
       } else {
         toast.error(data.message || 'Login failed');
       }
@@ -208,4 +209,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Login;

@@ -4,9 +4,12 @@ import { BiBookmark, BiSearch, BiMenu, BiX } from 'react-icons/bi'
 import { CgProfile } from 'react-icons/cg'
 import { Link, useNavigate } from 'react-router-dom'
 import { userContext } from '../../../store/Context'
+import {Button} from '@/components/ui/button'
 
 function Navbar() {
   const {user} = useContext(userContext)
+  console.log(user);
+
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState("Home")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -55,11 +58,7 @@ function Navbar() {
           {navLinks.map((link, idx) => (
             <li key={idx}>
               <Link 
-              to={`/${link}`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  setActiveNav(link)
-                }}
+              to={link == "home" ? "/" :`/${link}`}
                   
                 className={`${activeNav === link ? "text-[#f17a31]" : ""} capitalize  hover:border-b-2 hover:border-[#f17a31] px-1.5 pb-1.5 hover:text-[#f17a31] transition-colors duration-300`}
               >
@@ -102,14 +101,23 @@ function Navbar() {
               </label>
             </div>
             
-            <div className="bookmark text-white cursor-pointer group">
+            <div onClick={()=>user?.isVerified ? navigate("/bookmarks") : navigate("/login") } className="bookmark text-white cursor-pointer group">
               <BiBookmark size={28}/>
             </div>
             
-            <div className="profile text-white flex gap-1 items-center cursor-pointer">
-              <CgProfile size={28} /> 
-              <span className='text-lg'>{user.name}</span>
+            {user.isVerified ? 
+            <div className="text-white flex items-center gap-x-1 ">
+              <CgProfile size={24} /> 
+              <p className='text-xl mt-1'>{user.name}</p>
             </div>
+            :
+            <div className="">
+              <Button onClick={()=> navigate("/login") }
+                className="ring-1 ring-orange-500 text-lg bg-white text-black hover:text-white cursor-pointer hover:bg-gray-300">
+                Login
+              </Button>
+            </div>
+            }
           </>
         )}
         

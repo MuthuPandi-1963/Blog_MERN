@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { Save, Edit, Trash2 } from "lucide-react";
 import ImageUpload from "../../Components/Sections/cloudinary/ImageUpload.jsx";
 import axiosInstance from "../../helpers/AxiosInstance.jsx";
+import { useOutletContext } from "react-router-dom";
 
-const Blogs = ({ blogs, setBlogs, categories }) => {
+const Blogs = () => {
+  const {blogs,setBlogs,categories} = useOutletContext()
   const [editingBlog, setEditingBlog] = useState(null);
   const [newBlog, setNewBlog] = useState({});
   const blog = editingBlog || newBlog;
@@ -73,7 +75,7 @@ const Blogs = ({ blogs, setBlogs, categories }) => {
           <input
             type="text"
             placeholder="Author"
-            value={blog.author || ""}
+            value={blog.author?.name || ""}
             onChange={(e) => handleInputChange(e, "author")}
             className="px-3 py-2 border rounded-md"
           />
@@ -137,10 +139,10 @@ const Blogs = ({ blogs, setBlogs, categories }) => {
             </tr>
           </thead>
           <tbody>
-            {blogs.map((blog) => (
+            {!blogs ? [] : blogs.map((blog) => (
               <tr key={blog.id} className="border-b">
                 <td className="px-6 py-2">{blog.title}</td>
-                <td className="px-6 py-2">{blog.author}</td>
+                <td className="px-6 py-2">{blog?.author?.name}</td>
                 <td className="px-6 py-2">
                   {categories.find((cat) => cat.id === blog.categoryId)?.name || "-"}
                 </td>

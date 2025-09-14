@@ -8,53 +8,46 @@ import { sendCookie } from "../utils/cookie.js";
 // ---------- REGISTER ----------
 
 export const register = async (req, res) => {
-    try {
-  const { name, email, password } = req.body;
-  if (!name || name.length < 5) {
-    return res.json({
-      success: false,
-      message: "name is undefined",
-    });
-  }
-  if (!email || email.length < 8) {
-    return res.json({
-      success: false,
-      message: "name is undefined",
-    });
-  }
-  if (!password || password.length < 8) {
-    return res.json({
-      success: false,
-      message: "name is undefined",
-    });
-  }
-  const checkUser = await prisma.user.findFirst({ where: { email } });
-  if (checkUser && checkUser.isVerified) {
-    return res
-      .status(404)
-      .json({ message: "user already exists", success: false });
-  }
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET);
-  if(checkUser && !checkUser.isVerified){
+  try {
+    const { name, email, password } = req.body;
+    if (!name || name.length < 5) {
+      return res.json({
+        success: false,
+        message: "name is undefined",
+      });
+    }
+    if (!email || email.length < 8) {
+      return res.json({
+        success: false,
+        message: "name is undefined",
+      });
+    }
+    if (!password || password.length < 8) {
+      return res.json({
+        success: false,
+        message: "name is undefined",
+      });
+    }
+    const checkUser = await prisma.user.findFirst({ where: { email } });
+    if (checkUser && checkUser.isVerified) {
+      return res
+        .status(404)
+        .json({ message: "user already exists", success: false });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET);
+    if (checkUser && !checkUser.isVerified) {
       const updatedUser = await prisma.user.update({
-        where : {email : checkUser.email},
-        data : {
-          password : hashedPassword,
+        where: { email: checkUser.email },
+        data: {
+          password: hashedPassword,
           verificationToken,
           bio: req.body.bio || checkUser.bio,
-        avatar:
-          req.body?.avatar ||
-          checkUser.avatar,
-        countryId: req.body.countryId || checkUser.countryId,
-        }
-      },
-      
-  )
-  }
-    
-
-    
+          avatar: req.body?.avatar || checkUser.avatar,
+          countryId: req.body.countryId || checkUser.countryId,
+        },
+      });
+    }
 
     const user = await prisma.user.create({
       data: {
@@ -92,7 +85,7 @@ export const register = async (req, res) => {
 export const verifyEmail = async (req, res) => {
   const { token } = req.query;
   console.log("token :", token);
-  
+
   const decoded = jwt.decode(token, process.env.JWT_SECRET);
   if (!decoded)
     return res.status(404).json({ message: "user not found", success: false });
@@ -100,17 +93,29 @@ export const verifyEmail = async (req, res) => {
     const user = await prisma.user.findFirst({
       where: { email: decoded.email },
     });
-    if (!user) return res
+    if (!user)
+      return res
         .status(404)
         .json({ message: "user not found", success: false });
-    if (user.isVerified){
-        sendCookie(res, token);
-        return res
-        .status(200)
-        .json({ message: "user already verified", success: true });
+    if (user.isVerified) {
+      sendCookie(res, token);
+      return res.status(200).json({
+        message: "user already verified",
+        success: true,
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          bio: user.bio,
+          countryId: user.countryId,
+          isVerified: user.isVerified,
+        },
+      });
     }
- 
-        const dbToken = user.verificationToken;
+
+    const dbToken = user.verificationToken;
     if (dbToken !== token)
       return res
         .status(404)
@@ -119,9 +124,22 @@ export const verifyEmail = async (req, res) => {
       where: { email: decoded.email },
       data: { isVerified: true, verificationToken: null },
     });
-    const newToken = jwt.sign({ id :updatedUser.id,email : updatedUser.email,role: updatedUser.role }, process.env.JWT_SECRET);
+    const newToken = jwt.sign(
+      { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role },
+      process.env.JWT_SECRET
+    );
     sendCookie(res, newToken);
     res.json({
+      data: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        avatar: updatedUser.avatar,
+        bio: updatedUser.bio,
+        countryId: updatedUser.countryId,
+        isVerified: updatedUser.isVerified,
+      },
       message: "email verified successfully",
       success: true,
     });
@@ -134,9 +152,9 @@ export const verifyEmail = async (req, res) => {
 };
 
 // ---------- LOGIN ----------
-export const login =  async (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
-    if (!email || email.length < 8) {
+  if (!email || email.length < 8) {
     return res.json({
       success: false,
       message: "email is undefined",
@@ -150,35 +168,66 @@ export const login =  async (req, res) => {
   }
   try {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(400).json({ message: 'email address not found' });
-    if (!user.isVerified) return res.status(400).json({ error: 'Email not verified' });
+    if (!user)
+      return res.status(400).json({ message: "email address not found" });
+    if (!user.isVerified)
+      return res.status(400).json({ error: "Email not verified" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+    sendCookie(res, token);
+    res.json({
+      success: true,
+      message: "login successfully",
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        countryId: user.countryId,
+        isVerified: user.isVerified,
+      },
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
-}
-
+};
 
 export const refreshAuth = async (req, res) => {
-  const token = req.cookies.token || '';
-  if (!token) return res.status(401).json({ message: 'No token provided' });  
+  const token = req.cookies.token || "";
+  if (!token) return res.status(401).json({ message: "No token provided" });
   try {
     const decoded = jwt.decode(token, process.env.JWT_SECRET);
-    if (!decoded) return res.status(401).json({ message: 'Invalid token' });
-    const user = await prisma.user.findUnique({ where: { email: decoded.email } });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({ data: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, bio: user.bio, countryId: user.countryId, isVerified:user.isVerified } });
-  }
-  catch (err) {
+    if (!decoded) return res.status(401).json({ message: "Invalid token" });
+    const user = await prisma.user.findUnique({
+      where: { email: decoded.email },
+    });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        bio: user.bio,
+        countryId: user.countryId,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  } 
+    res.status(500).json({ error: "Server error" });
+  }
 };
 // // ---------- PROTECTED ROUTE ----------
 
