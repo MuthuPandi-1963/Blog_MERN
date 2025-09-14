@@ -84,7 +84,7 @@ export const register = async (req, res) => {
       message: "User registered! Please check your email to verify.",
     });
   } catch (err) {
-    console.error(err);
+    console.log(err);
     res.status(400).json({ error: "User registration failed." });
   }
 };
@@ -103,7 +103,14 @@ export const verifyEmail = async (req, res) => {
     if (!user) return res
         .status(404)
         .json({ message: "user not found", success: false });
-    const dbToken = user.verificationToken;
+    if (user.isVerified){
+        sendCookie(res, token);
+        return res
+        .status(200)
+        .json({ message: "user already verified", success: true });
+    }
+ 
+        const dbToken = user.verificationToken;
     if (dbToken !== token)
       return res
         .status(404)
@@ -157,6 +164,22 @@ export const login =  async (req, res) => {
   }
 }
 
+
+export const refreshAuth = async (req, res) => {
+  const token = req.cookies.token || '';
+  if (!token) return res.status(401).json({ message: 'No token provided' });  
+  try {
+    const decoded = jwt.decode(token, process.env.JWT_SECRET);
+    if (!decoded) return res.status(401).json({ message: 'Invalid token' });
+    const user = await prisma.user.findUnique({ where: { email: decoded.email } });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ data: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, bio: user.bio, countryId: user.countryId, isVerified:user.isVerified } });
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  } 
+};
 // // ---------- PROTECTED ROUTE ----------
 
 // app.get('/profile', authMiddleware, async (req, res) => {

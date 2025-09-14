@@ -1,10 +1,12 @@
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { BiBookmark, BiSearch, BiMenu, BiX } from 'react-icons/bi'
 import { CgProfile } from 'react-icons/cg'
 import { Link, useNavigate } from 'react-router-dom'
+import { userContext } from '../../../store/Context'
 
 function Navbar() {
+  const {user} = useContext(userContext)
   const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState("Home")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -106,7 +108,7 @@ function Navbar() {
             
             <div className="profile text-white flex gap-1 items-center cursor-pointer">
               <CgProfile size={28} /> 
-              <span className='text-lg'></span>
+              <span className='text-lg'>{user.name}</span>
             </div>
           </>
         )}

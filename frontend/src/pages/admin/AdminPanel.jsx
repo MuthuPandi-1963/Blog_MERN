@@ -4,6 +4,7 @@ import Categories from "./Categories";
 import Countries from "./Countries";
 import Blogs from "./Blogs";
 import axiosInstance from "../../helpers/AxiosInstance.jsx";
+import { Outlet } from "react-router-dom";
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -122,11 +123,13 @@ const AdminPanel = () => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 bg-gray-100">
           <div className="max-w-6xl mx-auto">
-            {activeTab === "categories" && <Categories categories={categories} setCategories={setCategories} />}
+              <Outlet context={{categories, countries, blogs, setCategories, setBlogs, setCountries}} />
+            {/* {activeTab === "categories" && <Categories categories={categories} setCategories={setCategories} />}
             {activeTab === "countries" && <Countries countries={countries} setCountries={setCountries} />}
             {activeTab === "blogs" && (
               <Blogs blogs={blogs} setBlogs={setBlogs} categories={categories} countries={countries} />
-            )}
+            )} */}
+
           </div>
         </main>
       </div>
