@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ImageUpload from '../../Components/Sections/cloudinary/ImageUpload';
-import axiosInstance from '../../helpers/AxiosInstance.jsx';
 import flag from '/assets/white-flag.png';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '../../helpers/AxiosInstance.jsx';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+
+const fetchCountries = async () => {
+  const res = await axiosInstance.get("/countries");
+  return res.data?.data || [];
+};
 
 const Register = () => {
   const [step, setStep] = useState(1);
@@ -16,22 +25,14 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
 
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const res = await axiosInstance.get("/countries");
-        setCountries(res.data?.data || []);
-      } catch (err) {
-        setErrorMsg("Failed to load countries.");
-      }
-    };
-    fetchCountries();
-  }, []);
+  const navigate = useNavigate();
+
+  const { data: countries = [], isLoading: countriesLoading, error: countriesError } = useQuery({
+    queryKey: ['countries'],
+    queryFn: fetchCountries,
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,8 +68,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg('');
-    setSuccessMsg('');
+    setErrors({});
     try {
       const payload = {
         name: formData.name,
@@ -78,10 +78,18 @@ const Register = () => {
         bio: formData.bio,
         countryId: formData.countryId,
       };
-      console.log(payload);
-      
-      const res = await axiosInstance.post('/auth/register', payload);
-      setSuccessMsg('Registration successful! Please check your email for verification.');
+      const response = await axiosInstance.post('/auth/register', payload);
+      if (response.data?.success) {
+        toast.success('Registration successful! Redirecting...');
+        setTimeout(() => {
+          navigate('/');
+        }, 1500);
+      } else {
+        toast.error(
+          response.data?.message ||
+          'Registration failed. Please try again.'
+        );
+      }
       setFormData({
         name: '',
         email: '',
@@ -94,7 +102,7 @@ const Register = () => {
       setAvatarPreview(null);
       setStep(1);
     } catch (err) {
-      setErrorMsg(
+      toast.error(
         err.response?.data?.message ||
         'Registration failed. Please try again.'
       );
@@ -104,6 +112,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <ToastContainer position="top-center" />
       <div className="w-full max-w-2xl bg-gray-900 rounded-xl shadow-2xl overflow-hidden border border-orange-500">
         <div className="bg-orange-500 p-6 text-center">
           <h1 className="text-3xl font-bold">Create Your Account</h1>
@@ -120,8 +129,8 @@ const Register = () => {
               </div>
             </div>
           </div>
-          {successMsg && <div className="mb-4 text-green-500 text-center">{successMsg}</div>}
-          {errorMsg && <div className="mb-4 text-red-500 text-center">{errorMsg}</div>}
+          {countriesLoading && <div className="mb-4 text-orange-500 text-center">Loading countries...</div>}
+          {countriesError && <div className="mb-4 text-red-500 text-center">Failed to load countries.</div>}
           <form onSubmit={handleSubmit}>
             {step === 1 && (
               <div className="space-y-6">
@@ -174,6 +183,12 @@ const Register = () => {
                   />
                   {errors.confirmPassword && <p className="mt-1 text-red-500 text-sm">{errors.confirmPassword}</p>}
                 </div>
+                <div className="gotologin">
+                  Already have an account?{' '}
+                  <span onClick={()=>navigate('/login')} className="cursor-pointer text-orange-500 hover:text-orange-400 font-medium">
+                    Log in
+                  </span>  
+                </div>
                 <button
                   type="button"
                   onClick={handleNext}
@@ -209,6 +224,7 @@ const Register = () => {
                         value={formData.countryId}
                         onChange={handleChange}
                         className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        disabled={countriesLoading}
                       >
                         <option value="">Select your country</option>
                         {(Array.isArray(countries) ? countries : []).map(country => (

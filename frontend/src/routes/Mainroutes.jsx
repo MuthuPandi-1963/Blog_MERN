@@ -7,7 +7,7 @@ function Mainroutes() {
     <div>
       < Navbar/>
       <Route path="/"  element={<Home/>} ></Route>
-
+    
     </div>
   )
 }
