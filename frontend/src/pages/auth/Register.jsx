@@ -65,8 +65,7 @@ const Register = () => {
 
   const handleBack = () => setStep(1);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
     setErrors({});
     try {
@@ -79,6 +78,8 @@ const Register = () => {
         countryId: formData.countryId,
       };
       const response = await axiosInstance.post('/auth/register', payload);
+      console.log("res",response);
+      
       if (response.data?.success) {
         toast.success('Registration successful! Redirecting...');
         setTimeout(() => {
@@ -102,6 +103,8 @@ const Register = () => {
       setAvatarPreview(null);
       setStep(1);
     } catch (err) {
+      console.log("err",err);
+      
       toast.error(
         err.response?.data?.message ||
         'Registration failed. Please try again.'
@@ -131,7 +134,7 @@ const Register = () => {
           </div>
           {countriesLoading && <div className="mb-4 text-orange-500 text-center">Loading countries...</div>}
           {countriesError && <div className="mb-4 text-red-500 text-center">Failed to load countries.</div>}
-          <form onSubmit={handleSubmit}>
+          <div >
             {step === 1 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold mb-4 text-orange-500">Basic Information</h2>
@@ -213,6 +216,7 @@ const Register = () => {
                           <span className="text-gray-500">No image</span>
                         )}
                       </div>
+                      
                       <ImageUpload onUpload={handleAvatarUpload} />
                     </div>
                   </div>
@@ -279,7 +283,8 @@ const Register = () => {
                     Back
                   </button>
                   <button
-                    type="submit"
+                  onClick={handleSubmit}
+                    type="button"
                     className="flex-1 bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
                     disabled={loading}
                   >
@@ -288,7 +293,7 @@ const Register = () => {
                 </div>
               </div>
             )}
-          </form>
+          </div>
         </div>
       </div>
     </div>

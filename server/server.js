@@ -1,7 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import cors from 'cors'
 import 'dotenv/config';
 import cors from 'cors';
 import {logger} from './logger/logger.js';        // Pino HTTP logger
@@ -38,8 +37,18 @@ app.use(express.urlencoded({ extended: true }));
 // 3. Cookie parser
 app.use(cookieParser());
 
-const whitelist = [process.env.CLIENT_URL, 'http://localhost:5173']
-// 3. CORS configuration
+// const whitelist = [process.env.CLIENT_URL, 'http://localhost:5173']
+// // 3. CORS configuration
+
+
+// 4. Sanitize input to prevent XSS attacks
+// app.use(sanitizeInput);
+
+// 5. Rate limiting (before routes)
+app.use('/api', apiLimiter);
+
+// 6. Request logger (Pino)
+app.use(loggerMiddleware);
 
 app.use(cors( {
   origin: process.env.CLIENT_URL,
@@ -51,26 +60,6 @@ app.use(cors( {
 }
 ))
 
-// 4. Sanitize input to prevent XSS attacks
-// app.use(sanitizeInput);
-
-// 5. Rate limiting (before routes)
-app.use('/api', apiLimiter);
-
-// 6. Request logger (Pino)
-app.use(loggerMiddleware);
-
-const whitelist = [process.env.CLIENT_URL , "http://localhost:5173"]
-app.use(cors( {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  }
-}
-))
 // ========================
 // HEALTH CHECK ROUTE
 // ========================
