@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Save, Edit, Trash2 } from 'lucide-react';
-import ImageUpload from '../../Components/Sections/cloudinary/ImageUpload.jsx';
-import axiosInstance from '../../helpers/AxiosInstance.jsx';
+import React, { useState } from "react";
+import { Save, Edit, Trash2 } from "lucide-react";
+import ImageUpload from "../../Components/Sections/cloudinary/ImageUpload.jsx";
+import axiosInstance from "../../helpers/AxiosInstance.jsx";
 
 const Categories = ({ categories, setCategories }) => {
+  const safeCategories = Array.isArray(categories) ? categories : [];
   const [editingItem, setEditingItem] = useState(null);
   const [newItem, setNewItem] = useState({});
+  const item = editingItem || newItem;
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
@@ -15,76 +16,80 @@ const Categories = ({ categories, setCategories }) => {
   };
 
   const handleImageUpload = (url) => {
-    if (editingItem) {
-      setEditingItem(prev => ({
-        ...prev,
-        img: url
-      }));
-    } else {
-      setNewItem(prev => ({
-        ...prev,
-        img: url
-      }));
-    }
+    if (editingItem) setEditingItem((prev) => ({ ...prev, img: url }));
+    else setNewItem((prev) => ({ ...prev, img: url }));
   };
 
   const handleSave = async () => {
     if (editingItem) {
-      // Update category in backend
       try {
         await axiosInstance.put(`/categories/${editingItem.id}`, editingItem);
-        setCategories(categories.map(cat => cat.id === editingItem.id ? editingItem : cat));
+        setCategories(safeCategories.map((cat) => (cat.id === editingItem.id ? editingItem : cat)));
         setEditingItem(null);
       } catch (error) {
-        console.error('Error updating category:', error);
+        console.error("Error updating category:", error);
       }
     } else {
-      const newCategory = { ...newItem, id: Date.now().toString() };
-      // Send to backend
       try {
-        await axiosInstance.post('/categories', newCategory);
-        setCategories([...categories, newCategory]);
+        const response = await axiosInstance.post("/categories", newItem);
+        setCategories([...safeCategories, response.data]);
         setNewItem({});
       } catch (error) {
-        console.error('Error adding category:', error);
+        console.error("Error adding category:", error);
       }
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/categories/${id}`);
-      setCategories(categories.filter(cat => cat.id !== id));
+      await axiosInstance.delete(`/categories/${id}`);
+      setCategories(safeCategories.filter((cat) => cat.id !== id));
     } catch (error) {
-      console.error('Error deleting category:', error);
+      console.error("Error deleting category:", error);
     }
   };
 
-  const handleCancel = () => { setEditingItem(null); setNewItem({}); };
-
-  const item = editingItem || newItem;
+  const handleCancel = () => {
+    setEditingItem(null);
+    setNewItem({});
+  };
 
   return (
     <>
       {/* Form */}
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">
-          {editingItem ? 'Edit Category' : 'Add New Category'}
-        </h2>
+        <h2 className="text-xl font-semibold mb-4">{editingItem ? "Edit Category" : "Add New Category"}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" placeholder="Name" value={item.name || ''} onChange={(e) => handleInputChange(e, 'name')} className="px-3 py-2 border rounded-md" />
-          <input type="text" placeholder="Description" value={item.description || ''} onChange={(e) => handleInputChange(e, 'description')} className="px-3 py-2 border rounded-md" />
+          <input
+            type="text"
+            placeholder="Name"
+            value={item.name || ""}
+            onChange={(e) => handleInputChange(e, "name")}
+            className="px-3 py-2 border rounded-md"
+          />
+          <input
+            type="text"
+            placeholder="Description"
+            value={item.description || ""}
+            onChange={(e) => handleInputChange(e, "description")}
+            className="px-3 py-2 border rounded-md"
+          />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
             <ImageUpload onUpload={handleImageUpload} />
-            {item.img && (
-              <img src={item.img} alt="category" className="mt-2 w-32 h-20 object-cover rounded" />
-            )}
+            {item.img && <img src={item.img} alt="category" className="mt-2 w-32 h-20 object-cover rounded" />}
           </div>
         </div>
         <div className="flex justify-end mt-6 space-x-2">
-          {editingItem && <button onClick={handleCancel} className="px-4 py-2 bg-gray-500 text-white rounded-md">Cancel</button>}
-          <button onClick={handleSave} className="px-4 py-2 bg-[#29f700] text-black rounded-md flex items-center">
+          {editingItem && (
+            <button onClick={handleCancel} className="px-4 py-2 bg-gray-500 text-white rounded-md">
+              Cancel
+            </button>
+          )}
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-[#29f700] text-black rounded-md flex items-center"
+          >
             <Save size={18} className="mr-1" /> Save
           </button>
         </div>
@@ -102,13 +107,17 @@ const Categories = ({ categories, setCategories }) => {
             </tr>
           </thead>
           <tbody>
-            {categories.map(cat => (
-              <tr key={cat.id} className="border-b">
+            {safeCategories.map((cat, idx) => (
+              <tr key={cat.id ?? idx} className="border-b">
                 <td className="px-6 py-2">{cat.name}</td>
                 <td className="px-6 py-2">{cat.description}</td>
                 <td className="px-6 py-2">
-                  <button onClick={() => setEditingItem(cat)} className="text-blue-600 mr-3"><Edit size={16} /></button>
-                  <button onClick={() => handleDelete(cat.id)} className="text-red-600"><Trash2 size={16} /></button>
+                  <button onClick={() => setEditingItem(cat)} className="text-blue-600 mr-3">
+                    <Edit size={16} />
+                  </button>
+                  <button onClick={() => handleDelete(cat.id)} className="text-red-600">
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))}

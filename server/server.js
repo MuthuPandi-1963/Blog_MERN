@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import cors from 'cors'
 import 'dotenv/config';
-
+import cors from 'cors';
 import {logger} from './logger/logger.js';        // Pino HTTP logger
 import { loggerMiddleware } from './middleware/loggerMiddleware.js';
 import prisma from './config/prismaConfig.js';  // Prisma Client
@@ -37,6 +37,19 @@ app.use(express.urlencoded({ extended: true }));
 
 // 3. Cookie parser
 app.use(cookieParser());
+
+const whitelist = [process.env.CLIENT_URL, 'http://localhost:5173']
+// 3. CORS configuration
+
+app.use(cors( {
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+}
+))
 
 // 4. Sanitize input to prevent XSS attacks
 // app.use(sanitizeInput);
