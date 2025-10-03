@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -21,29 +22,29 @@ enum BlogStatus {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  role      UserRole  @default(READER)
-  avatar    String?   // profile picture
-  bio       String?
-  countryId String?
-  country   Country?  @relation(fields: [countryId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?  @updatedAt
-  verificationToken String?
+  id                         String    @id @default(uuid())
+  name                       String
+  email                      String    @unique
+  password                   String
+  role                       UserRole  @default(READER)
+  avatar                     String? // profile picture
+  bio                        String?
+  countryId                  String?
+  country                    Country?  @relation(fields: [countryId], references: [id])
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime? @updatedAt
+  verificationToken          String?
   verificationTokenExpiresAt DateTime?
-  isVerified Boolean @default(false)
+  isVerified                 Boolean   @default(false)
 
-  blogs     Blog[]     // blogs written by this user
-  comments  Comment[]
+  blogs    Blog[] // blogs written by this user
+  comments Comment[]
 }
 
 model Country {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  code      String   @unique // e.g., "US", "IN", "UK"
+  code      String    @unique // e.g., "US", "IN", "UK"
   flag      String? // Optional flag image URL
   createdAt DateTime? @default(now())
 
@@ -52,36 +53,36 @@ model Country {
 }
 
 model Category {
-  id          String      @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String?
-  img String?
-  createdAt   DateTime @default(now())
+  img         String?
+  createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
 
   blog Blog[]
 }
 
 model Blog {
-  id          String      @id @default(uuid())
-  title       String
-  content     String
-  coverImage  String
-  images      String[]
-  authorId    String
-  author      User        @relation(fields: [authorId], references: [id])
-  countryId   String
-  country     Country     @relation(fields: [countryId], references: [id])
-  categoryId  String?
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime?    @updatedAt
-
+  id         String    @id @default(uuid())
+  title      String
+  content    String
+  coverImage String
+  images     String[]
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id])
+  countryId  String
+  country    Country   @relation(fields: [countryId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+  isTrending Boolean   @default(true)
   // Many-to-many with Tags
-  tags        Tag[]
+  tags       Tag[]
 
   // One-to-many with Comments
-  comments    Comment[]
+  comments Comment[]
 }
 
 model Tag {
@@ -90,17 +91,17 @@ model Tag {
   createdAt DateTime @default(now())
 
   // Many-to-many with Blogs
-  blogs     Blog[]
+  blogs Blog[]
 }
 
 model Comment {
-  id        String    @id @default(uuid())
-  content   String
-  blogId    String
-  blog      Blog      @relation(fields: [blogId], references: [id])
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  id      String @id @default(uuid())
+  content String
+  blogId  String
+  blog    Blog   @relation(fields: [blogId], references: [id])
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime  @default(now())
-  updatedAt DateTime?  @updatedAt
+  updatedAt DateTime? @updatedAt
 }
