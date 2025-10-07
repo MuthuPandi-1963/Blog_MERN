@@ -58,8 +58,9 @@ export const getBlog = async (req, res) => {
 };
 
 export const createBlog = async (req, res) => {
-  const { title, content, coverImage, images, authorId, countryId, categoryId, tagIds } = req.body;
-
+  const { title, content, images, authorId, countryId, categoryId } = req.body;
+  console.log(req.body);
+  
   try {
     // 1. Validate required related records
     const author = await prisma.user.findUnique({ where: { id: authorId } });
@@ -73,7 +74,7 @@ export const createBlog = async (req, res) => {
       category = await prisma.category.findUnique({ where: { id: categoryId } });
       if (!category) return res.status(400).json({ success: false, message: "Category not found", data: null });
     }
-
+    const tagIds = req.body?.tagIds || []
     // 2. Validate tags (ignore any missing)
     let connectTags = [];
     if (tagIds?.length) {
@@ -88,7 +89,7 @@ export const createBlog = async (req, res) => {
       data: {
         title,
         content,
-        coverImage,
+        coverImage : req.body?.coverImage || "",
         images,
         authorId,
         countryId,

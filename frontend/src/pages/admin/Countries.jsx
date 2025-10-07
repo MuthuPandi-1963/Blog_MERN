@@ -4,9 +4,10 @@ import { Save, Edit, Trash2 } from 'lucide-react';
 import ImageUpload from '../../Components/Sections/cloudinary/ImageUpload.jsx';
 import axiosInstance from '../../helpers/AxiosInstance.jsx';
 import { useOutletContext } from 'react-router-dom';
+import { useCountries } from '../../hooks/useCountries.js';
 
 const Countries = () => {
-  const {countries,setCountries} = useOutletContext()
+  const {countries,setCountries} = useCountries()
   const [editingCountry, setEditingCountry] = useState(null);
   const [newCountry, setNewCountry] = useState({});
 

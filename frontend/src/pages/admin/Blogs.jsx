@@ -1,15 +1,21 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Save, Edit, Trash2 } from "lucide-react";
 import ImageUpload from "../../Components/Sections/cloudinary/ImageUpload.jsx";
 import axiosInstance from "../../helpers/AxiosInstance.jsx";
 import { useOutletContext } from "react-router-dom";
+import { useCategories } from "../../hooks/useCategories.js";
+import { userContext } from "../../store/Context.jsx";
 
 const Blogs = () => {
-  const {blogs,setBlogs,categories} = useOutletContext()
+  const {blogs,setBlogs} = useOutletContext()
   const [editingBlog, setEditingBlog] = useState(null);
   const [newBlog, setNewBlog] = useState({});
   const blog = editingBlog || newBlog;
-
+    const { categories, isLoading: catLoading } = useCategories();
+    const {user} = useContext(userContext)
+    console.log(user);
+    
+  
   const handleInputChange = (e, field) => {
     const value = e.target.value;
     if (editingBlog) setEditingBlog({ ...editingBlog, [field]: value });
@@ -25,17 +31,19 @@ const Blogs = () => {
     if (editingBlog) {
       try {
         await axiosInstance.put(`/blogs/${editingBlog.id}`, editingBlog);
-        setBlogs(blogs.map((b) => (b.id === editingBlog.id ? editingBlog : b)));
+        // setBlogs(blogs.map((b) => (b.id === editingBlog.id ? editingBlog : b)));
         setEditingBlog(null);
       } catch (err) {
         console.log("err blog", err);
       }
     } else {
       try {
-        const res = await axiosInstance.post(`/blogs`, newBlog);
+        const res = await axiosInstance.post(`/blogs`, {...newBlog,authorId:user?.id,countryId:user?.countryId});
         // Use backend response: res.data.data (if that's your format)
-        const addedBlog = res.data.data || res.data;
-        setBlogs([...blogs, addedBlog]);
+        console.log(res.data);
+        
+        const addedBlog = res.data?.data;
+        // setBlogs([...blogs, addedBlog]);
         setNewBlog({});
       } catch (err) {
         console.log("err blog send", err);
@@ -86,7 +94,7 @@ const Blogs = () => {
             className="px-3 py-2 border rounded-md"
           >
             <option value="">Select Category</option>
-            {categories.map((cat) => (
+            {categories.length > 0 && categories?.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>
@@ -144,7 +152,7 @@ const Blogs = () => {
                 <td className="px-6 py-2">{blog.title}</td>
                 <td className="px-6 py-2">{blog?.author?.name}</td>
                 <td className="px-6 py-2">
-                  {categories.find((cat) => cat.id === blog.categoryId)?.name || "-"}
+                  {categories.length>0 && categories.find((cat) => cat.id === blog.categoryId)?.name || "-"}
                 </td>
                 <td className="px-6 py-2">
                   {blog.coverImage ? (

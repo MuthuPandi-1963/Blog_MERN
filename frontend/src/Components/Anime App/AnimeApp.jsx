@@ -13,6 +13,8 @@ import { BlogGrid } from "../../pages/Main/BlogGrid"
 import  Categories  from "../../pages/Main/Categories"
 import Profile from "../../pages/Main/Profile"
 import { BookmarksPage } from "../../pages/Main/Bookmarks"
+import { BlogPage } from "../../pages/Main/BlogPage"
+import { BlogView } from "../../pages/Main/BlogView"
 
 
 function AnimeApp() {
@@ -28,7 +30,8 @@ function AnimeApp() {
               <Route  path="/verify-email" element={<VerifyEmail/>} ></Route>
               <Route path="/blogs/:id" element={<BlogViewPage/>}/>
               <Route path="/news" element={<NewsPage/>}/>
-              <Route path="/blogs" element={<BlogGrid/>}/>
+              <Route path="/blog" element={<BlogPage/>}/>
+              <Route path="/blog/:id" element={<BlogView/>}/>
               <Route path="/categories" element={<Categories/>}/>
               <Route path="profile" element={<Profile/>}/>
               <Route path="bookmarks" element={<BookmarksPage/>}/>

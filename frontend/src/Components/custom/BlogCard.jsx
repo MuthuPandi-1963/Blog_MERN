@@ -1,9 +1,13 @@
 import { cn } from '@/lib/utils';
 import {Calendar, User, Clock, MapPin} from 'lucide-react'
 import { Button } from '@/components/ui/button';
+import { useLocation } from 'react-router-dom';
 
 
 export default function BlogCard({ blog, viewMode, nav }) {
+  const  {pathname : path}  = useLocation()
+  console.log(path);
+  
   const formatDate = (date) =>
     new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -148,7 +152,7 @@ export default function BlogCard({ blog, viewMode, nav }) {
 
           <Button
             onClick={() =>
-              nav( `/blogs/${blog.id}`, {state: blog})
+              nav((path==="/blogs" ?  `/blogs/${blog.id}` :  `/blog/${blog.id}`), {state: blog})
             }
             variant="ghost"
             size={viewMode === 'compact' ? 'sm' : 'default'}

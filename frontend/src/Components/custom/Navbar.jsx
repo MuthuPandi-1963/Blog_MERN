@@ -45,7 +45,7 @@ function Navbar() {
     },
     {
       name: "blogs",
-      path: "/blogs",
+      path: "/blog",
       dropdown: {
         items: [],
       },
